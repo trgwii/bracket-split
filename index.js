@@ -1,6 +1,9 @@
 'use strict';
 
 // Utils
+const isEmpty = list =>
+	list.length === 0;
+
 const head = list =>
 	list[0];
 
@@ -18,54 +21,61 @@ const concatLast = (list, str) =>
 		init(list),
 		(last(list) || '') + str);
 
+// Bracket-related functions
+const isOpening = (char, brackets) =>
+	brackets.some(x =>
+		head(x) === char);
+
+const isClosing = (char, brackets) =>
+	brackets.some(x =>
+		last(x) === char);
+
+const openingToClosing = (char, brackets) =>
+	last(brackets.find(x =>
+		head(x) === char) || []);
+
 // Main
-const Splitter = (delimiter, brackets) => {
-
-	// Bracket-related functions
-	const isOpening = char =>
-		brackets.some(x =>
-			head(x) === char);
-
-	const isClosing = char =>
-		brackets.some(x =>
-			last(x) === char);
-
-	const openingToClosing = char =>
-		(brackets.find(x =>
-			x[0] === char) || [])[1];
-
-	return ({ stack, acc }, char) => {
-		if (isOpening(char)) {
+const Splitter = (delimiter, brackets) =>
+	({ stack, acc }, char) => {
+		if (isOpening(char, brackets)) {
 			return {
-				stack: append(stack, char),
-				acc: concatLast(acc, char)
+				acc: concatLast(acc, char),
+				stack: append(stack, char)
 			};
 		}
-		if (isClosing(char)) {
-			if (stack.length === 0 || char !== openingToClosing(last(stack))) {
+		if (isClosing(char, brackets)) {
+			if (
+				isEmpty(stack) ||
+				char !== openingToClosing(last(stack), brackets)
+			) {
 				throw new SyntaxError('Unexpected closing bracket: ' + char);
 			}
 			return {
-				stack: init(stack),
-				acc: concatLast(acc, char)
+				acc: concatLast(acc, char),
+				stack: init(stack)
 			};
 		}
 		if (char === delimiter) {
-			if (stack.length === 0) {
+			if (isEmpty(stack)) {
 				return {
-					stack,
-					acc: append(acc, '')
+					acc: append(acc, ''),
+					stack
 				};
 			}
 		}
 		return {
-			stack,
-			acc: concatLast(acc, char)
+			acc: concatLast(acc, char),
+			stack
 		};
 	};
-};
 
-// Reducer
+/**
+ * Performs a bracket-aware string split.
+ * @param {string} delimiter The delimiter to split by.
+ * @param {string} str The string to split.
+ * @param {Array<string[]>} [brackets] Override the default brackets: { } [ ].
+ * @returns {string[]} The splitted string.
+ */
 const bracketSplit = (
 	delimiter,
 	str,
@@ -78,8 +88,8 @@ const bracketSplit = (
 	const result = str
 		.split('')
 		.reduce(splitter, {
-			stack: [],
-			acc: []
+			acc: [],
+			stack: []
 		});
 	if (result.stack.length !== 0) {
 		throw new SyntaxError('Unexpected end of input');
