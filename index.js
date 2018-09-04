@@ -13,6 +13,12 @@ const init = list =>
 const last = list =>
 	list[list.length - 1];
 
+const assoc = (key, value, obj) =>
+	({ ...obj, [key]: value });
+
+const merge = (a, b) =>
+	({ ...a, ...b });
+
 const append = (list, item) =>
 	[ ...list, item ];
 
@@ -36,54 +42,40 @@ const openingToClosing = (char, brackets) =>
 
 // Main
 const Splitter = (delimiter, brackets, quotes, escaper) =>
-	({ acc, escape, quoted, stack }, char) => {
+	(state, char) => {
+		const { acc, escape, quoted, stack } = state;
 		if (escape) {
-			return {
+			return merge(state, {
 				acc: concatLast(acc, char),
-				escape: false,
-				quoted,
-				stack
-			};
+				escape: false
+			});
 		}
 		if (char === escaper) {
-			return {
+			return merge(state, {
 				acc: concatLast(acc, char),
-				escape: true,
-				quoted,
-				stack
-			};
+				escape: true
+			});
 		}
-		if (quotes.includes(char) && !quoted) {
-			return {
+		if (!quoted && quotes.includes(char)) {
+			return merge(state, {
 				acc: concatLast(acc, char),
-				escape,
-				quoted: char,
-				stack
-			};
+				quoted: char
+			});
 		}
 		if (quoted === char) {
-			return {
+			return merge(state, {
 				acc: concatLast(acc, char),
-				escape,
-				quoted: false,
-				stack
-			};
+				quoted: false
+			});
 		}
 		if (quoted) {
-			return {
-				acc: concatLast(acc, char),
-				escape,
-				quoted,
-				stack
-			};
+			return assoc('acc', concatLast(acc, char), state);
 		}
 		if (isOpening(char, brackets)) {
-			return {
+			return merge(state, {
 				acc: concatLast(acc, char),
-				escape,
-				quoted,
 				stack: append(stack, char)
-			};
+			});
 		}
 		if (isClosing(char, brackets)) {
 			if (
@@ -92,29 +84,17 @@ const Splitter = (delimiter, brackets, quotes, escaper) =>
 			) {
 				throw new SyntaxError('Unexpected closing bracket: ' + char);
 			}
-			return {
+			return merge(state, {
 				acc: concatLast(acc, char),
-				escape,
-				quoted,
 				stack: init(stack)
-			};
+			});
 		}
 		if (char === delimiter) {
 			if (isEmpty(stack)) {
-				return {
-					acc: append(acc, ''),
-					escape,
-					quoted,
-					stack
-				};
+				return assoc('acc', append(acc, ''), state);
 			}
 		}
-		return {
-			acc: concatLast(acc, char),
-			escape,
-			quoted,
-			stack
-		};
+		return assoc('acc', concatLast(acc, char), state);
 	};
 
 /**
@@ -143,7 +123,7 @@ const bracketSplit = (
 			quoted: false,
 			stack: []
 		});
-	if (result.stack.length !== 0) {
+	if (!isEmpty(result.stack)) {
 		throw new SyntaxError('Unexpected end of input');
 	}
 	return result.acc;
