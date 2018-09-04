@@ -89,10 +89,8 @@ const Splitter = (delimiter, brackets, quotes, escaper) =>
 				stack: init(stack)
 			});
 		}
-		if (char === delimiter) {
-			if (isEmpty(stack)) {
-				return assoc('acc', append(acc, ''), state);
-			}
+		if (char === delimiter && isEmpty(stack)) {
+			return assoc('acc', append(acc, ''), state);
 		}
 		return assoc('acc', concatLast(acc, char), state);
 	};
@@ -123,7 +121,7 @@ const bracketSplit = (
 			quoted: false,
 			stack: []
 		});
-	if (!isEmpty(result.stack)) {
+	if (!isEmpty(result.stack) || result.quoted) {
 		throw new SyntaxError('Unexpected end of input');
 	}
 	return result.acc;
