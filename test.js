@@ -12,3 +12,22 @@ assert.deepStrictEqual(bracketSplit(' ', input), output);
 console.log(input);
 console.log(output.map(x =>
 	JSON.parse(x)));
+
+
+const quoteInput = '[ "}" ]';
+const quoteOutput = [ '[ "}" ]' ];
+
+assert.deepStrictEqual(bracketSplit(' ', quoteInput), quoteOutput);
+
+console.log(quoteInput);
+console.log(quoteOutput.map(x =>
+	JSON.parse(x)));
+
+
+const escapeInput = '[ \\} ]';
+const escapeOutput = [ '[ \\} ]' ];
+
+assert.deepStrictEqual(bracketSplit(' ', escapeInput), escapeOutput);
+
+console.log(escapeInput);
+console.log(escapeOutput);
