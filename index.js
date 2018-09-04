@@ -75,6 +75,7 @@ const Splitter = (delimiter, brackets) =>
  * @param {string} str The string to split.
  * @param {Array<string[]>} [brackets] Override the default brackets: { } [ ].
  * @returns {string[]} The splitted string.
+ * @throws {SyntaxError} Will throw if the brackets don't match up.
  */
 const bracketSplit = (
 	delimiter,
