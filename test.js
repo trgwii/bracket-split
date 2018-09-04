@@ -31,3 +31,31 @@ assert.deepStrictEqual(bracketSplit(' ', escapeInput), escapeOutput);
 
 console.log(escapeInput);
 console.log(escapeOutput);
+
+const lispInput = '(reduce add 0 (list 1 2 3))';
+const lispOutput = [ 'reduce', 'add', '0', [ 'list', '1', '2', '3' ] ];
+
+const unwrap = str =>
+	str.slice(1, -1);
+
+const parseLisp = str =>
+	bracketSplit(' ', str, [ [ '(', ')' ] ], [], '');
+
+const iterate = x =>
+	x.startsWith('(') && x.endsWith(')')
+		? parseLisp(unwrap(x)).map(iterate)
+		: x;
+
+assert.deepStrictEqual(iterate(lispInput), lispOutput);
+
+console.log(lispInput);
+console.log(lispOutput);
+
+
+const mkrInput = '{ "status": { "help" : ok" } }';
+const mkrOutput = new SyntaxError('Unexpected end of input, expected: "');
+
+assert.throws(() => bracketSplit(' ', mkrInput));
+
+console.log(mkrInput);
+console.error(mkrOutput.name + ': ' + mkrOutput.message);

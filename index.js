@@ -121,15 +121,15 @@ const bracketSplit = (
 			quoted: false,
 			stack: []
 		});
-	if (!isEmpty(result.stack)) {
-		throw new SyntaxError(
-			'Unexpected end of input, expected: ' +
-			openingToClosing(last(result.stack), brackets));
-	}
 	if (result.quoted) {
 		throw new SyntaxError(
 			'Unexpected end of input, expected: ' +
 			result.quoted);
+	}
+	if (!isEmpty(result.stack)) {
+		throw new SyntaxError(
+			'Unexpected end of input, expected: ' +
+			openingToClosing(last(result.stack), brackets));
 	}
 	return result.acc;
 };
