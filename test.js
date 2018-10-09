@@ -59,3 +59,14 @@ assert.throws(() => bracketSplit(' ', mkrInput));
 
 console.log(mkrInput);
 console.error(mkrOutput.name + ': ' + mkrOutput.message);
+
+const tommyInput =
+	'"Could, have, strings", {"or": "objects", "inside": "it"}, ["or", "arrays", "with", "fun", "things", 16/9]';
+const tommyOutput = [
+	'"Could, have, strings"',
+	' {"or": "objects", "inside": "it"}',
+	' ["or", "arrays", "with", "fun", "things", 16/9]'
+];
+console.log(tommyInput);
+console.log(tommyOutput);
+assert.deepStrictEqual(bracketSplit(',', tommyInput), tommyOutput);
