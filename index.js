@@ -41,7 +41,13 @@ const openingToClosing = (char, brackets) =>
 		head(x) === char) || []);
 
 // Main
-const Splitter = (delimiter, brackets, quotes, escaper) =>
+const Splitter = (
+	delimiter,
+	brackets,
+	quotes,
+	escaper,
+	heredocs
+) =>
 	(state, char) => {
 		const { acc, escape, quoted, stack } = state;
 		if (escape) {
@@ -72,6 +78,9 @@ const Splitter = (delimiter, brackets, quotes, escaper) =>
 			return assoc('acc', concatLast(acc, char), state);
 		}
 		if (isOpening(char, brackets)) {
+			if (stack.some(x => isOpening(x, heredocs))) {
+				return assoc('acc', concatLast(acc, char), state);
+			}
 			return merge(state, {
 				acc: concatLast(acc, char),
 				stack: append(stack, char)
@@ -82,6 +91,9 @@ const Splitter = (delimiter, brackets, quotes, escaper) =>
 				isEmpty(stack) ||
 				char !== openingToClosing(last(stack), brackets)
 			) {
+				if (stack.some(x => isOpening(x, heredocs))) {
+					return assoc('acc', concatLast(acc, char), state);
+				}
 				throw new SyntaxError('Unexpected closing bracket: ' + char);
 			}
 			return merge(state, {
@@ -89,7 +101,12 @@ const Splitter = (delimiter, brackets, quotes, escaper) =>
 				stack: init(stack)
 			});
 		}
-		if (char === delimiter && isEmpty(stack)) {
+		if (
+			(delimiter instanceof RegExp
+				? char.match(delimiter)
+				: char === delimiter) &&
+			isEmpty(stack)
+		) {
 			return assoc('acc', append(acc, ''), state);
 		}
 		return assoc('acc', concatLast(acc, char), state);
@@ -97,11 +114,12 @@ const Splitter = (delimiter, brackets, quotes, escaper) =>
 
 /**
  * Performs a bracket-aware string split.
- * @param {string} delimiter The delimiter to split by.
+ * @param {string|RegExp} delimiter The delimiter to split by.
  * @param {string} str The string to split.
  * @param {Array<string[]>} [brackets] Override the default brackets: { } [ ].
  * @param {string[]} [quotes] Override the default string quotes: ' ".
  * @param {string} [escaper] Override the default escape character: \.
+ * @param {Array<string[]>} [heredocs] A set of bracket pairs to use as heredocs (unnestable brackets)
  * @returns {string[]} The splitted string.
  * @throws {SyntaxError} Will throw if the brackets don't match up.
  */
@@ -110,9 +128,15 @@ const bracketSplit = (
 	str,
 	brackets = [ [ '{', '}' ], [ '[', ']' ] ],
 	quotes = [ '\'', '"' ],
-	escaper = '\\'
+	escaper = '\\',
+	heredocs = []
 ) => {
-	const splitter = Splitter(delimiter, brackets, quotes, escaper);
+	const splitter = Splitter(
+		delimiter,
+		[ ...brackets, ...heredocs ],
+		quotes,
+		escaper,
+		heredocs);
 	const result = str
 		.split('')
 		.reduce(splitter, {

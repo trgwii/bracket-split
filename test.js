@@ -70,3 +70,21 @@ const tommyOutput = [
 console.log(tommyInput);
 console.log(tommyOutput);
 assert.deepStrictEqual(bracketSplit(',', tommyInput), tommyOutput);
+
+const heredocInput = 'list 1 <(foooop hello ) ) <<<<\\>\\>mismatched parens foo bar baz> 3';
+const heredocOutput = [
+	'list',
+	'1',
+	'<(foooop hello ) ) <<<<\\>\\>mismatched parens foo bar baz>',
+	'3'
+];
+
+console.log(heredocInput);
+console.log(heredocOutput);
+assert.deepStrictEqual(bracketSplit(
+	/\s/,
+	heredocInput,
+	[ [ '(', ')' ], [ '[', ']' ] ],
+	[ '\'', '"' ],
+	'\\',
+	[ [ '<', '>' ] ]), heredocOutput);

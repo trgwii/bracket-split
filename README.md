@@ -33,6 +33,8 @@ bracketSplit(
 
 `escaper` is a string to prefix another character in order to always treat it as a normal character (you can escape quotes and brackets to ignore them)
 
+`heredocs` are pairs of brackets to treat as special overriding unnestable brackets, they support escaping and work a bit differently from normal brackets
+
 ## Possible errors
 
 ```bash
