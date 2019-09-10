@@ -1,6 +1,6 @@
 {
   "name": "bracket-split",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Bracket-aware split function, can be used to split a string containing JSON objects",
   "main": "index.js",
   "scripts": {
